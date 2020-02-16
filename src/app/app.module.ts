@@ -6,13 +6,15 @@ import { FormsModule } from '@angular/forms';
 import { SettingsComponent } from './settings/settings.component';
 import { LogComponent } from './log/log.component';
 import { MsCheckPipe } from './shared/pipes/ms-check.pipe';
+import { PodStatusPipe } from './shared/pipes/pod-status.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     SettingsComponent,
     LogComponent,
-    MsCheckPipe
+    MsCheckPipe,
+    PodStatusPipe
   ],
   imports: [
     BrowserModule,

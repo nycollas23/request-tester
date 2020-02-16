@@ -2,6 +2,8 @@ import { Component, OnInit, Input } from '@angular/core';
 import { ResponseModel } from '../shared/models/response.model';
 import { RequestServiceService } from '../shared/services/request-service.service';
 import { Observable, Subscription } from 'rxjs';
+import { ServicePod } from '../shared/models/service-pod.model';
+import { PodStatus } from '../shared/enum/pod-status.enum';
 
 @Component({
   selector: 'app-log',
@@ -19,18 +21,14 @@ export class LogComponent implements OnInit {
   @Input()
   url: string;
 
-  @Input()
-  activedRequests: boolean;
-
-  private logs = new Array<ResponseModel>();
+  private pods = new Array<ServicePod>();
   private timerNumber: number;
   private timerInteval;
 
-  activedServices = new Array<boolean>();
-
-  private subs = new Subscription();
-
   initService = false;
+
+  readonly ATIVO = PodStatus.ATIVO;
+  readonly DESATIVADO = PodStatus.DESATIVADO;
 
   constructor(
     private requestServiceService: RequestServiceService
@@ -54,48 +52,41 @@ export class LogComponent implements OnInit {
   }
 
   startServices(): void {
-    this.listenActivedServices();
-    this.requestServiceService.createServices(this.requestServices, this.timeRequestMS, this.url);
-    this.startListener();
+
+    this.pods = this.requestServiceService.createServices(this.requestServices, this.timeRequestMS, this.url);
+
+    console.log(this.pods);
+
     this.timerStatusInit();
     this.initService = true;
   }
 
-  startListener(): void {
-
-    this.logs = new Array<ResponseModel>();
-
-    for (let index = 0; index < this.requestServices; index++) {
-      this.logs.push({
-        hashService: '',
-        timeResponse: 0
-      });
-
-      this.subs.add(
-        this.requestServiceService.getListenerService(index).subscribe((responseService: ResponseModel) => {
-          this.logs[index] = responseService;
-        })
-      );
-    }
-  }
-
-  pauseContinueService(index: number): void {
-    this.requestServiceService.stopContinueServices(index);
+  pauseContinueService(pod: ServicePod): void {
+    pod.pauseOrContinuePod();
   }
 
   stopServices(): void {
     this.initService = false;
-    this.subs.unsubscribe();
-    this.requestServiceService.stopAllServices();
+    this.stopAllServices();
     clearInterval(this.timerInteval);
   }
 
-  listenActivedServices(): void {
-    this.subs.add(
-      this.requestServiceService.getActivedServices().subscribe((response: Array<boolean>) => {
-        this.activedServices = response;
-      })
+  stopAllServices(): void {
+    this.pods.forEach((pod: ServicePod) => {
+      pod.stopPod();
+    });
+  }
+
+  killPod(pod: ServicePod): void {
+    pod.killPod();
+    this.pods.splice(
+      this.pods.findIndex((podFind) => podFind.hashName === pod.hashName),
+      1
     );
+
+    if (this.pods.length <= 0) {
+      this.stopServices();
+    }
   }
 
 }

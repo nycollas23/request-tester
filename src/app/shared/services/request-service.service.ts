@@ -1,85 +1,43 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { ResponseModel } from '../models/response.model';
 import { HttpService } from './http.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { ServicePod } from '../models/service-pod.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RequestServiceService {
 
-  private eventsEmmiter = new Array<EventEmitter<ResponseModel>>();
-  private servicesResponse = new Array<any>();
-  private isActived = new Array<boolean>();
-  private activedEmitter = new EventEmitter<Array<boolean>>();
+  private subscriptions = new Subscription();
+  private responseChangePod = new EventEmitter<ServicePod>();
 
   constructor(
     private httpService: HttpService
   ) { }
 
-  createServices(requestServices: number, timeRequestMS: number, url: string): void {
+  createServices(requestServices: number, timeRequestMS: number, url: string): Array<ServicePod> {
+    const servicesPods = new Array<ServicePod>();
+
     for (let index = 0; index < requestServices; index++) {
-      this.eventsEmmiter[index] = new EventEmitter<ResponseModel>();
-      this.isActived[index] = true;
-      this.startServices(index, timeRequestMS, url);
+      const newPod = new ServicePod(this.httpService);
+      newPod.createPod(url, timeRequestMS);
+      servicesPods.push(newPod);
+      this.createListenerPod(newPod);
     }
 
-    this.activedEmitter.emit(this.isActived);
+    return servicesPods;
 
   }
 
-  private startServices(index: number, interval: number, url: string): void {
-
-    
-
-    this.servicesResponse[index] = setInterval(() => {
-
-      if (this.isActived[index]) {
-        const timeResponseInit = new Date();
-
-        this.httpService.getHttpService(url)
-          .pipe(
-            take(1)
-          )
-          .subscribe((response: ResponseModel) => {
-            response.timeResponse = new Date().getTime() - timeResponseInit.getTime();
-            this.eventsEmmiter[index].emit(response);
-          });
-
-      }
-
-    }, interval);
-
-  }
-
-  getListenerService(index: number): Observable<ResponseModel> {
-    return this.eventsEmmiter[index].asObservable();
-  }
-
-  getActivedServices(): Observable<Array<boolean>> {
-    return this.activedEmitter.asObservable();
-  }
-
-  stopContinueServices(index: number): void {
-    this.isActived[index] = !this.isActived[index];
-    this.activedEmitter.emit(this.isActived);
-  }
-
-  stopAllServices(): void {
-
-    this.servicesResponse.forEach((value, index) => {
-      clearInterval(this.servicesResponse[index]);
-    });
-
-    this.resetAll();
-
-  }
-
-  private resetAll(): void {
-    this.eventsEmmiter = new Array<EventEmitter<ResponseModel>>();
-    this.servicesResponse = new Array<any>();
-    this.isActived = new Array<boolean>();
+  createListenerPod(pod: ServicePod): void {
+    this.subscriptions.add(
+      pod.eventEmitter.subscribe((podChanged: ServicePod) => {
+        console.log('HOUVE MUDANÇA NO POD ' + podChanged.hashName);
+        this.responseChangePod.emit(podChanged);
+      })
+    );
   }
 
 }

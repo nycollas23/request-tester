@@ -15,49 +15,89 @@
 </span>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-12">
         <h3>Dados</h3>
         <table class="table table-bordered">
             <thead>
                 <th>
-                    Nº do "Pod"
+                    Hash do Pod
                 </th>
                 <th>
                     Tempo de Resposta
                 </th>
                 <th>
-                    Status
+                    Ativado?
                 </th>
                 <th>
-                    Ativado?
+                    Ações
                 </th>
             </thead>
             <tbody>
                 
-                <tr *ngFor="let log of logs; let i = index">
+                <tr *ngFor="let pod of pods;let i = index">
                     <td>
-                        {{i}}
+                        {{pod.hashName}}
                     </td>
                     <td>
-                        {{log.timeResponse}}ms
-                    </td>
-                    <td>
-                        <div [class]="log.timeResponse | msCheck"></div>
+                        <ng-container *ngIf="!pod.timeResponse; else time">
+                            <span class="badge badge-primary">Aguardando chamada</span>
+                        </ng-container>
+                        <ng-template #time>
+                            <div>
+                                <div [class]="pod.timeResponse | msCheck"></div>
+                                <span>{{pod.timeResponse}}ms</span>
+                            </div>
+                        </ng-template>
                     </td>
                     <td class="text-center">
-                        <span *ngIf="activedServices[i]" class="badge badge-pill badge-success">Ativado</span>
-                        <span *ngIf="!activedServices[i]" class="badge badge-pill badge-dark">Desativado</span>
+                        <div [innerHTML]="pod.getPodStatus() | podStatusPipe"></div>
                     </td>
                     <td>
-                        <i class="fa" [class.fa-pause-circle]="activedServices[i]" [class.fa-play-circle]="!activedServices[i]" (click)="pauseContinueService(i)" aria-hidden="true"></i>
+                        
+                        <button type="button" class="btn btn-info" (click)="pauseContinueService(pod)">
+                            <i 
+                            class="fa" 
+                            [class.fa-pause-circle]="pod.getPodStatus() === ATIVO" 
+                            [class.fa-play-circle]="pod.getPodStatus() === DESATIVADO" 
+                            aria-hidden="true">
+                            </i>
+                        </button>
+                        
+                        <button type="button" class="btn btn-danger" data-toggle="modal" [attr.data-target]="'#podModal' + i">
+                            <i class="fa fa-times-circle" aria-hidden="true"></i>
+                        </button>
+
                     </td>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="podModal{{i}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Deseja apagar o Pod?</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Deseja realmente apagar o POD {{pod.hashName}}?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" (click)="killPod(pod)">Apagar</button>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+
                 </tr>
             </tbody>
         </table>
     </div>
+    <!--
     <div class="col-md-4">
         <h3>Estatisticas</h3>
 
-    </div>
+    </div>-->
 </div>
 

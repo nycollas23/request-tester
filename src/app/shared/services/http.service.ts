@@ -14,10 +14,4 @@ export class HttpService {
         return this.httpClient.get<ResponseModel>(URL);
     }
 
-    testService(): ResponseModel {
-        const test = new ResponseModel();
-        test.timeResponse = Math.round(Math.random() * 50);
-        return test;
-    }
-
 }
