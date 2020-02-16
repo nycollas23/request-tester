@@ -1,0 +1,63 @@
+<div *ngIf="!initService" class="text-center" >
+    <button type="button" (click)="startServices()" class="btn btn-primary">Iniciar Serviço</button>
+</div>
+
+<div *ngIf="initService" class="text-center" >
+    <button type="button" (click)="stopServices()" class="btn btn-primary">Parar Todos</button>
+</div>
+
+<span *ngIf="initService">
+    Proxima chamada em: 
+    <span class="badge badge-primary">
+        <span *ngIf="timerNumber == 1">{{timerNumber}} segundo</span>
+        <span *ngIf="timerNumber > 1">{{timerNumber}} segundos</span>
+    </span>
+</span>
+
+<div class="row">
+    <div class="col-md-8">
+        <h3>Dados</h3>
+        <table class="table table-bordered">
+            <thead>
+                <th>
+                    Nº do "Pod"
+                </th>
+                <th>
+                    Tempo de Resposta
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Ativado?
+                </th>
+            </thead>
+            <tbody>
+                
+                <tr *ngFor="let log of logs; let i = index">
+                    <td>
+                        {{i}}
+                    </td>
+                    <td>
+                        {{log.timeResponse}}ms
+                    </td>
+                    <td>
+                        <div [class]="log.timeResponse | msCheck"></div>
+                    </td>
+                    <td class="text-center">
+                        <span *ngIf="activedServices[i]" class="badge badge-pill badge-success">Ativado</span>
+                        <span *ngIf="!activedServices[i]" class="badge badge-pill badge-dark">Desativado</span>
+                    </td>
+                    <td>
+                        <i class="fa" [class.fa-pause-circle]="activedServices[i]" [class.fa-play-circle]="!activedServices[i]" (click)="pauseContinueService(i)" aria-hidden="true"></i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h3>Estatisticas</h3>
+
+    </div>
+</div>
+

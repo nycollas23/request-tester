@@ -1,0 +1,24 @@
+<h2>Testador de Request</h2>
+
+<div class="form-group">
+    <label for="ms-time">Tempo entre requisição</label>
+    <input type="number" class="form-control" id="ms-time" [(ngModel)]="timeRequestMS" placeholder="Tempo em ms">
+</div>
+
+<div class="form-group">
+    <label for="count-service">Quantidade de Serviços</label>
+    <input type="number" class="form-control" id="count-service" [(ngModel)]="requestServices" placeholder="Quantidade de Serviços">
+</div>
+
+<div class="form-group">
+    <label for="url-service">Quantidade de Serviços</label>
+    <input type="text" class="form-control" id="url-service" [(ngModel)]="url" placeholder="Caminho para Teste">
+</div>
+
+<app-log
+    [timeRequestMS]="timeRequestMS"
+    [requestServices]="requestServices"
+    [url]="url"
+    [activedRequests]="true"
+>
+</app-log>

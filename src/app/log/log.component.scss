@@ -1,0 +1,22 @@
+.light-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+    
+    &.ms-check-gray {
+        background-color: gray;
+    }
+
+    &.ms-check-red {
+        background-color: red;
+    }
+
+    &.ms-check-yellow {
+        background-color: yellow;
+    }
+
+    &.ms-check-green {
+        background-color: green;
+    }
+
+}
