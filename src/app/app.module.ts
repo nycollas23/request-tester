@@ -7,6 +7,16 @@ import { SettingsComponent } from './settings/settings.component';
 import { LogComponent } from './log/log.component';
 import { MsCheckPipe } from './shared/pipes/ms-check.pipe';
 import { PodStatusPipe } from './shared/pipes/pod-status.pipe';
+import { RequestTesterComponent } from './request-tester/request-tester.component';
+import { ChartsModule } from 'ng2-charts';
+import { ReportComponent } from './report/report.component';
+
+import { RouterModule, Routes } from '@angular/router';
+
+const routes: Routes = [
+  { path: 'request-tester', component: RequestTesterComponent },
+  { path: 'reports', component: ReportComponent },
+];
 
 @NgModule({
   declarations: [
@@ -14,12 +24,19 @@ import { PodStatusPipe } from './shared/pipes/pod-status.pipe';
     SettingsComponent,
     LogComponent,
     MsCheckPipe,
-    PodStatusPipe
+    PodStatusPipe,
+    RequestTesterComponent,
+    ReportComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
+    ChartsModule,
+    RouterModule.forRoot(
+      routes,
+      { enableTracing: true }
+    )
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,0 +1,29 @@
+/* You can add global styles to this file, and also import other style files */
+.light-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+    display: inline-block;
+    margin-right: 5px;
+    
+    &.ms-check-gray {
+        background-color: gray;
+    }
+
+    &.ms-check-red {
+        background-color: red;
+    }
+
+    &.ms-check-yellow {
+        background-color: yellow;
+    }
+
+    &.ms-check-green {
+        background-color: green;
+    }
+
+    &.ms-check-black {
+        background-color: black;
+    }
+
+}

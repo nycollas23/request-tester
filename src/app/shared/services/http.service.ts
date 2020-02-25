@@ -10,8 +10,9 @@ export class HttpService {
         private httpClient: HttpClient
     ) { }
 
-    getHttpService(URL: string): Observable<ResponseModel> {
-        return this.httpClient.get<ResponseModel>(URL);
+    // tslint:disable-next-line: ban-types
+    getHttpService(URL: string): Observable<Object> {
+        return this.httpClient.get(URL);
     }
 
 }

@@ -1,5 +1,6 @@
 export enum PodStatus {
     ATIVO,
     DESATIVADO,
-    ERROR
+    ERROR,
+    FINALIZADO
 }

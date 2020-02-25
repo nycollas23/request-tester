@@ -17,12 +17,12 @@ export class RequestServiceService {
     private httpService: HttpService
   ) { }
 
-  createServices(requestServices: number, timeRequestMS: number, url: string): Array<ServicePod> {
+  createServices(requestServices: number, timeRequestMS: number, url: string, countLoops: number): Array<ServicePod> {
     const servicesPods = new Array<ServicePod>();
 
     for (let index = 0; index < requestServices; index++) {
       const newPod = new ServicePod(this.httpService);
-      newPod.createPod(url, timeRequestMS);
+      newPod.createPod(url, (timeRequestMS * 1000), countLoops);
       servicesPods.push(newPod);
       this.createListenerPod(newPod);
     }

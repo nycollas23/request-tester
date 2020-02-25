@@ -28,6 +28,10 @@ export class PodStatusPipe implements PipeTransform {
         text = 'Erro no Pod';
         cssClass = 'badge badge-pill badge-danger';
         break;
+      case PodStatus.FINALIZADO:
+        text = 'Finalizado!';
+        cssClass = 'badge badge-pill badge-primary';
+        break;
     }
 
     return this.domSanitizer.bypassSecurityTrustHtml(

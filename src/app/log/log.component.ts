@@ -1,9 +1,7 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { ResponseModel } from '../shared/models/response.model';
-import { RequestServiceService } from '../shared/services/request-service.service';
-import { Observable, Subscription } from 'rxjs';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { ServicePod } from '../shared/models/service-pod.model';
 import { PodStatus } from '../shared/enum/pod-status.enum';
+import { StatusTimeSettings } from '../shared/models/status-time-settings.model';
 
 @Component({
   selector: 'app-log',
@@ -13,68 +11,31 @@ import { PodStatus } from '../shared/enum/pod-status.enum';
 export class LogComponent implements OnInit {
 
   @Input()
-  timeRequestMS: number;
-
-  @Input()
-  requestServices: number;
-
-  @Input()
-  url: string;
-
   private pods = new Array<ServicePod>();
-  private timerNumber: number;
-  private timerInteval;
 
-  initService = false;
+  @Input()
+  private separateTimes = new StatusTimeSettings();
+
+  @Output()
+  private podsChange = new EventEmitter<Array<ServicePod>>();
+
+  @Input()
+  pieChartData = new Array<number>(4);
 
   readonly ATIVO = PodStatus.ATIVO;
   readonly DESATIVADO = PodStatus.DESATIVADO;
+  readonly ERROR = PodStatus.ERROR;
+  readonly FINALIZADO = PodStatus.FINALIZADO;
 
-  constructor(
-    private requestServiceService: RequestServiceService
-  ) { }
+  constructor( ) { }
 
   ngOnInit() {
 
   }
 
-  private timerStatusInit() {
-
-    this.timerNumber = this.timeRequestMS / 1000;
-
-    this.timerInteval = setInterval(() => {
-      this.timerNumber--;
-      if (this.timerNumber <= 0) {
-        this.timerNumber = this.timeRequestMS / 1000;
-      }
-    }, 1000);
-
-  }
-
-  startServices(): void {
-
-    this.pods = this.requestServiceService.createServices(this.requestServices, this.timeRequestMS, this.url);
-
-    console.log(this.pods);
-
-    this.timerStatusInit();
-    this.initService = true;
-  }
-
   pauseContinueService(pod: ServicePod): void {
     pod.pauseOrContinuePod();
-  }
-
-  stopServices(): void {
-    this.initService = false;
-    this.stopAllServices();
-    clearInterval(this.timerInteval);
-  }
-
-  stopAllServices(): void {
-    this.pods.forEach((pod: ServicePod) => {
-      pod.stopPod();
-    });
+    this.podsChange.emit(this.pods);
   }
 
   killPod(pod: ServicePod): void {
@@ -83,10 +44,23 @@ export class LogComponent implements OnInit {
       this.pods.findIndex((podFind) => podFind.hashName === pod.hashName),
       1
     );
+    this.podsChange.emit(this.pods);
+  }
 
-    if (this.pods.length <= 0) {
-      this.stopServices();
+  checkTimeIcon(responseTime: number): string {
+
+    if (responseTime >= this.separateTimes.bestTimeRangeMinimum && responseTime <= this.separateTimes.bestTimeRangeMaximum) {
+      return 'ms-check-green';
+    } else if (responseTime > this.separateTimes.bestTimeRangeMaximum && responseTime <= this.separateTimes.mediumTimeRangeMaximum)  {
+      return 'ms-check-yellow';
     }
+
+    if (this.separateTimes.badTimeRangeMaximum && responseTime > this.separateTimes.bestTimeRangeMaximum) {
+      return 'ms-check-black';
+    } else {
+      return 'ms-check-red';
+    }
+
   }
 
 }

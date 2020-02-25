@@ -1,26 +1,7 @@
-.light-status {
-    width: 10px;
-    height: 10px;
-    border-radius: 100%;
-    display: inline-block;
-    margin-right: 5px;
-    
-    &.ms-check-gray {
-        background-color: gray;
+.estatistica {
+    span {
+        margin-right: 2px;
     }
-
-    &.ms-check-red {
-        background-color: red;
-    }
-
-    &.ms-check-yellow {
-        background-color: yellow;
-    }
-
-    &.ms-check-green {
-        background-color: green;
-    }
-
 }
 
 .action-function {

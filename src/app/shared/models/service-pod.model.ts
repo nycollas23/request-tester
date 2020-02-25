@@ -3,10 +3,19 @@ import { HttpService } from '../services/http.service';
 import { take } from 'rxjs/operators';
 import { Md5 } from 'ts-md5/dist/md5';
 import { PodStatus } from '../enum/pod-status.enum';
+import { ServiceRequestLog } from './service-request-log.model';
+import { StatusLog } from '../enum/status-log.enum';
 
 export class ServicePod {
     private intervalFunction;
     private podStatus: PodStatus;
+    private countRequestsSuccess = 0;
+    private countRequestsFailed = 0;
+    private sumAlltimeResponse = 0;
+    private requestsLogs = new Array<ServiceRequestLog>();
+
+    private countLoopsRemain = 1;
+    private haveLoop = false;
 
     hashName: string | Int32Array;
     eventEmitter: EventEmitter<ServicePod>;
@@ -18,10 +27,15 @@ export class ServicePod {
 
     }
 
-    createPod = (url: string, interval = 1000) => {
+    createPod = (url: string, interval = 1000, countLoops = 0) => {
 
         if (!this.intervalFunction) {
             this.startedValuesPod();
+
+            if (countLoops > 0) {
+                this.haveLoop = true;
+                this.countLoopsRemain = countLoops;
+            }
 
             this.intervalFunction = setInterval(() => {
 
@@ -34,11 +48,32 @@ export class ServicePod {
                             take(1)
                         )
                         .subscribe((response) => {
-                            console.log('AQUI');
                             this.timeResponse = new Date().getTime() - timeResponseInit.getTime();
+                            this.sumAlltimeResponse += this.timeResponse;
+                            this.countRequestsSuccess++;
+
+                            if (this.haveLoop) {
+                                this.countLoopsRemain--;
+                            }
+
+                            if (this.haveLoop && this.countLoopsRemain <= 0) {
+                                this.podStatus = PodStatus.FINALIZADO;
+                                this.stopPod();
+                            }
+
+                            this.saveNewLog(StatusLog.SUCESSO, response, this.timeResponse);
+
                         }, (err) => {
-                            this.podStatus = PodStatus.ERROR;
-                            this.stopPod();
+
+                            this.countRequestsFailed++;
+
+                            this.saveNewLog(StatusLog.ERROR, err, 0);
+
+                            if (this.countRequestsFailed >= 3) {
+                                this.podStatus = PodStatus.ERROR;
+                                this.stopPod();
+                            }
+
                         });
 
                 }
@@ -63,6 +98,38 @@ export class ServicePod {
         }
     }
 
+    getHasLoop(): boolean {
+        return this.haveLoop;
+    }
+
+    getLoopRemain(): number {
+        return this.countLoopsRemain;
+    }
+
+    getCountSuccess(): number {
+        return this.countRequestsSuccess;
+    }
+
+    getCountError(): number {
+        return this.countRequestsFailed;
+    }
+
+    getAverageTimeResponse(): number {
+        const calc = this.sumAlltimeResponse / this.countRequestsSuccess;
+        return (calc) ? Math.round(calc) : 0;
+    }
+
+    getAverageTimeResponseFromLogs(): number {
+        let sumTimes = 0;
+
+        this.requestsLogs.forEach((log: ServiceRequestLog) => {
+            sumTimes += log.timeResponse;
+        });
+
+        return sumTimes / this.countRequestsSuccess;
+
+    }
+
     getPodStatus(): PodStatus {
         return this.podStatus;
     }
@@ -73,6 +140,21 @@ export class ServicePod {
         this.sendChange();
     }
 
+    /**
+     * Pode ser que esse método tenha mais funções futuramente
+     */
+    killPod(): void {
+        this.stopPod();
+    }
+
+    private saveNewLog(status: StatusLog, response: unknown, timeResponse: number): void {
+        const log = new ServiceRequestLog();
+        log.status = status;
+        log.timeResponse = timeResponse;
+        log.response = response;
+        this.requestsLogs.push(log);
+    }
+
     private startedValuesPod(): void {
         this.hashName = Md5.hashStr((Math.random() * 9999).toString());
         this.podStatus = PodStatus.ATIVO;
@@ -81,10 +163,6 @@ export class ServicePod {
 
     private sendChange(): void {
         this.eventEmitter.emit(this);
-    }
-
-    killPod(): void {
-        this.stopPod();
     }
 
 }
